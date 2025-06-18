@@ -42,14 +42,17 @@ func main() {
 	// Initialize REPO
 	userRepo := repository.NewUserRepository(db)
 	roleRepo := repository.NewRoleRepository(db)
+	scheduleRepo := repository.NewScheduleRepository(db)
 
 	// Initialize USECASE
 	authUsecase := usecase.NewAuthUsecase(userRepo)
 	roleUsecase := usecase.NewRoleUsecase(roleRepo)
+	scheduleUsecase := usecase.NewScheduleUsecase(scheduleRepo)
 
 	// Initialize HANDLER
 	handler.NewAuthHandler(apiV, authUsecase)
 	handler.NewRoleHandler(apiV, roleUsecase)
+	handler.NewScheduleHandler(apiV, scheduleUsecase)
 
 	apiV.GET("/ping", HandlePing)
 
