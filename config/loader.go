@@ -15,9 +15,13 @@ type Database struct {
 	Database string `json:"database"`
 	SSLMode  string `json:"sslmode"`
 }
-
+type Token struct {
+	AccessSecret  string
+	RefreshSecret string
+}
 type Config struct {
 	Database Database `json:"database"`
+	TokenCFG Token    `json:"token"`
 	Port     int      `json:"port"`
 }
 
@@ -32,6 +36,10 @@ func LoadConfig() (*Config, error) {
 			Password: os.Getenv("PG_PASSWORD"),
 			Database: os.Getenv("PG_DATABASE"),
 			SSLMode:  os.Getenv("PG_SSLMODE"),
+		},
+		TokenCFG: Token{
+			AccessSecret:  os.Getenv("ACCESS_SECRET"),
+			RefreshSecret: os.Getenv("REFRESH_SECRET"),
 		},
 		Port: func() int { p, _ := strconv.Atoi(os.Getenv("PORT")); return p }(),
 	}, nil

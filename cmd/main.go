@@ -64,11 +64,14 @@ func service_init() (*config.Config, error) {
 	if envload == nil {
 		return &config.Config{}, fmt.Errorf("failed to load configuration")
 	}
-
+	// Initialize database connection
 	err := pgsql.InitPG(envload.Database)
 	if err != nil {
 		return envload, fmt.Errorf("error initializing database: %w", err)
 	}
+
+	// configure token secrets
+	utils.JwtInit(envload.TokenCFG.AccessSecret, envload.TokenCFG.RefreshSecret)
 	return envload, nil
 }
 
