@@ -53,11 +53,11 @@ func (r *ScheduleRepository) Create(schedule *dto.Schedule) (*dto.Schedule, erro
 }
 
 func (r *ScheduleRepository) FindById(id uuid.UUID) (*dto.Schedule, error) {
-	query := "SELECT id, hall_id, movie_id, show_time, price FROM schedules WHERE id = $1"
+	query := "SELECT id, hall_id, movie_id, show_time, price, status FROM schedules WHERE id = $1"
 	row := r.db.QueryRow(query, id)
 
 	var schedule dto.Schedule
-	err := row.Scan(&schedule.ID, &schedule.HallID, &schedule.MovieID, &schedule.ShowTime, &schedule.Price)
+	err := row.Scan(&schedule.ID, &schedule.HallID, &schedule.MovieID, &schedule.ShowTime, &schedule.Price, &schedule.Status)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil // Not found
@@ -70,7 +70,7 @@ func (r *ScheduleRepository) FindById(id uuid.UUID) (*dto.Schedule, error) {
 
 // ==== Read (Multiple) ===
 func (r *ScheduleRepository) FindAll() ([]dto.Schedule, error) {
-	query := "SELECT id, hall_id, movie_id, show_time, price FROM schedules"
+	query := "SELECT id, hall_id, movie_id, show_time, price, status FROM schedules"
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (r *ScheduleRepository) FindAll() ([]dto.Schedule, error) {
 	var schedules []dto.Schedule
 	for rows.Next() {
 		var schedule dto.Schedule
-		if err := rows.Scan(&schedule.ID, &schedule.HallID, &schedule.MovieID, &schedule.ShowTime, &schedule.Price); err != nil {
+		if err := rows.Scan(&schedule.ID, &schedule.HallID, &schedule.MovieID, &schedule.ShowTime, &schedule.Price, &schedule.Status); err != nil {
 			return nil, err
 		}
 		schedules = append(schedules, schedule)
@@ -93,7 +93,7 @@ func (r *ScheduleRepository) FindAll() ([]dto.Schedule, error) {
 	return schedules, nil
 }
 func (r *ScheduleRepository) FindByMovieId(movieId int) ([]dto.Schedule, error) {
-	query := "SELECT id, hall_id, movie_id, show_time, price FROM schedules WHERE movie_id = $1"
+	query := "SELECT id, hall_id, movie_id, show_time, price, status FROM schedules WHERE movie_id = $1"
 	rows, err := r.db.Query(query, movieId)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (r *ScheduleRepository) FindByMovieId(movieId int) ([]dto.Schedule, error) 
 	var schedules []dto.Schedule
 	for rows.Next() {
 		var schedule dto.Schedule
-		if err := rows.Scan(&schedule.ID, &schedule.HallID, &schedule.MovieID, &schedule.ShowTime, &schedule.Price); err != nil {
+		if err := rows.Scan(&schedule.ID, &schedule.HallID, &schedule.MovieID, &schedule.ShowTime, &schedule.Price, &schedule.Status); err != nil {
 			return nil, err
 		}
 		schedules = append(schedules, schedule)
@@ -116,7 +116,7 @@ func (r *ScheduleRepository) FindByMovieId(movieId int) ([]dto.Schedule, error) 
 	return schedules, nil
 }
 func (r *ScheduleRepository) FindByCinemaID(cinemaId string) ([]dto.Schedule, error) {
-	query := "SELECT id, hall_id, movie_id, show_time, price FROM schedules WHERE cinema_id = $1"
+	query := "SELECT id, hall_id, movie_id, show_time, price, status FROM schedules WHERE cinema_id = $1"
 	rows, err := r.db.Query(query, cinemaId)
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (r *ScheduleRepository) FindByCinemaID(cinemaId string) ([]dto.Schedule, er
 	var schedules []dto.Schedule
 	for rows.Next() {
 		var schedule dto.Schedule
-		if err := rows.Scan(&schedule.ID, &schedule.HallID, &schedule.MovieID, &schedule.ShowTime, &schedule.Price); err != nil {
+		if err := rows.Scan(&schedule.ID, &schedule.HallID, &schedule.MovieID, &schedule.ShowTime, &schedule.Price, &schedule.Status); err != nil {
 			return nil, err
 		}
 		schedules = append(schedules, schedule)
@@ -140,7 +140,7 @@ func (r *ScheduleRepository) FindByCinemaID(cinemaId string) ([]dto.Schedule, er
 }
 
 func (r *ScheduleRepository) FindByShowTime(start, end time.Time) ([]dto.Schedule, error) {
-	query := "SELECT id, hall_id, movie_id, show_time, price FROM schedules WHERE show_time BETWEEN $1 AND $2"
+	query := "SELECT id, hall_id, movie_id, show_time, price, status FROM schedules WHERE show_time BETWEEN $1 AND $2"
 	rows, err := r.db.Query(query, start, end)
 	if err != nil {
 		return nil, err
@@ -150,7 +150,7 @@ func (r *ScheduleRepository) FindByShowTime(start, end time.Time) ([]dto.Schedul
 	var schedules []dto.Schedule
 	for rows.Next() {
 		var schedule dto.Schedule
-		if err := rows.Scan(&schedule.ID, &schedule.HallID, &schedule.MovieID, &schedule.ShowTime, &schedule.Price); err != nil {
+		if err := rows.Scan(&schedule.ID, &schedule.HallID, &schedule.MovieID, &schedule.ShowTime, &schedule.Price, &schedule.Status); err != nil {
 			return nil, err
 		}
 		schedules = append(schedules, schedule)
@@ -165,12 +165,33 @@ func (r *ScheduleRepository) FindByShowTime(start, end time.Time) ([]dto.Schedul
 
 // ==== Update ===
 func (r *ScheduleRepository) Update(schedule *dto.Schedule) (*dto.Schedule, error) {
-	query := `
-		UPDATE schedules
-		SET hall_id = $1, movie_id = $2, show_time = $3, price = $4
-		WHERE id = $5
-	`
-	_, err := r.db.Exec(query, schedule.HallID, schedule.MovieID, schedule.ShowTime, schedule.Price, schedule.ID)
+	// buat dinamis
+	sets := []string{}
+	if !schedule.ShowTime.IsZero() {
+		sets = append(sets, "show_time = $1")
+	}
+	if schedule.Price != 0 {
+		sets = append(sets, "price = $2")
+	}
+	if schedule.Status != "" {
+		sets = append(sets, "status = $3")
+	}
+	if len(sets) == 0 {
+		return nil, sql.ErrNoRows // No fields to update
+	}
+	// Join the sets with commas
+	setsStr := ""
+	for i, set := range sets {
+		if i > 0 {
+			setsStr += ", "
+		}
+		setsStr += set
+	}
+	// Prepare the query
+	// Note: The status field is not included in the update query, assuming it is not being updated.
+	query := "UPDATE schedules SET " + setsStr + " WHERE id = $4"
+
+	_, err := r.db.Exec(query, schedule.ShowTime, schedule.Price, schedule.Status, schedule.ID)
 	if err != nil {
 		return nil, err
 	}

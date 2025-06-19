@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"time"
+
 	"github.com/achmadnr21/cinema/internal/domain/dto"
 	"github.com/achmadnr21/cinema/internal/middleware"
 	"github.com/achmadnr21/cinema/internal/usecase"
@@ -25,6 +27,10 @@ func NewScheduleHandler(apiV *gin.RouterGroup, uc *usecase.ScheduleUsecase) {
 			middleware.RequirePermissionCinema("schedule", "read"),
 			scheduleHandler.GetSchedules)
 
+		schedule.GET("/:id",
+			middleware.RequirePermissionCinema("schedule", "read"),
+			scheduleHandler.GetScheduleByID)
+
 		schedule.POST("/",
 			middleware.RequirePermissionCinema("schedule", "create"),
 			scheduleHandler.CreateSchedule)
@@ -36,6 +42,14 @@ func NewScheduleHandler(apiV *gin.RouterGroup, uc *usecase.ScheduleUsecase) {
 		schedule.DELETE("/:id",
 			middleware.RequirePermissionCinema("schedule", "delete"),
 			scheduleHandler.DeleteSchedule)
+
+		schedule.POST("/:id/cancel",
+			middleware.RequirePermissionCinema("schedule", "update"),
+			scheduleHandler.CancelSchedule)
+		schedule.POST("/:id/postpone",
+			middleware.RequirePermissionCinema("schedule", "update"),
+			scheduleHandler.PostponeSchedule)
+
 	}
 }
 
@@ -52,6 +66,22 @@ func (h *ScheduleHandler) GetSchedules(c *gin.Context) {
 		return
 	}
 	c.JSON(200, utils.ResponseSuccess("Data Retrieved", schedules))
+}
+
+func (h *ScheduleHandler) GetScheduleByID(c *gin.Context) {
+	scheduleID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(400, utils.ResponseError("Invalid schedule ID"))
+		return
+	}
+
+	schedule, err := h.uc.GetScheduleByID(scheduleID)
+	if err != nil {
+		c.JSON(utils.GetHTTPErrorCode(err), utils.ResponseError(err.Error()))
+		return
+	}
+
+	c.JSON(200, utils.ResponseSuccess("Data Retrieved", schedule))
 }
 
 func (h *ScheduleHandler) CreateSchedule(c *gin.Context) {
@@ -107,4 +137,43 @@ func (h *ScheduleHandler) DeleteSchedule(c *gin.Context) {
 		return
 	}
 	c.JSON(200, utils.ResponseSuccess("Schedule deleted successfully", nil))
+}
+
+func (h *ScheduleHandler) CancelSchedule(c *gin.Context) {
+	scheduleID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(utils.GetHTTPErrorCode(err), utils.ResponseError(err.Error()))
+		return
+	}
+	// kirim ke usecase uc.CancelSchedule(scheduleID)
+	err = h.uc.CancelSchedule(scheduleID)
+	if err != nil {
+		c.JSON(utils.GetHTTPErrorCode(err), utils.ResponseError(err.Error()))
+		return
+	}
+	c.JSON(200, utils.ResponseSuccess("Schedule cancelled successfully", nil))
+}
+
+func (h *ScheduleHandler) PostponeSchedule(c *gin.Context) {
+	scheduleID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(utils.GetHTTPErrorCode(err), utils.ResponseError(err.Error()))
+		return
+	}
+
+	var postponeData struct {
+		NewShowTime time.Time `json:"show_time" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&postponeData); err != nil {
+		c.JSON(400, utils.ResponseError("Invalid request body"))
+		return
+	}
+
+	sch, err := h.uc.PostponeSchedule(scheduleID, postponeData.NewShowTime)
+	if err != nil {
+		c.JSON(utils.GetHTTPErrorCode(err), utils.ResponseError(err.Error()))
+		return
+	}
+
+	c.JSON(200, utils.ResponseSuccess("Schedule postponed successfully", sch))
 }
