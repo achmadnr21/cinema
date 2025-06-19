@@ -24,13 +24,47 @@ Dengan penerapan yang telah dilakukan, dapat dilihat bahwa:
 Dengan kelebihan tersebut tentunya akan dapat memudahkan proses maintenance dan reduce technical debt secara jangka panjang.
 ---
 ## System Design
-### Architectural
+
+### 🔧 Fitur Utama:
+- Pemesanan tiket online dengan pemilihan kursi
+- Manajemen film dan jadwal tayang
+- Proses pembayaran dan refund otomatis
+- Monitoring performa sistem
+- Penyimpanan data analitik untuk insight dan rekomendasi
+
+---
+
+### Topologi
 ![System Design](documents/system-design/SystemDesign.png)
+---
+
+## 🗂️ Teknologi yang Digunakan
+
+| Layer | Tools |
+|------|-------|
+| Bahasa Pemrograman | Golang |
+| Database | PostgreSQL (transaksi), MongoDB (analitik) |
+| Cache & Locking | Redis |
+| Observability | Prometheus, Grafana |
+| Authentication | JWT |
+| Container | Docker |
+| API Testing | Postman |
+
+---
+## 💽 Database Design
+
+Desain skema relasional dengan PostgreSQL. Mendukung:
+
+- Pemesanan berdasarkan jadwal tayang
+- Lock kursi sementara
+- Status transaksi dan refund
+- Tipe ENUM untuk status
+---
+![Database ERD](documents/erd/erd.png)
+---
 ### Booking Flow
 ![Book Flow](documents/system-design/Bookings.png)
 ---
-## Database ERD
-![Database ERD](documents/erd/erd.png)
 
 ## Auth Endpoint
 | Method | Endpoint         | Payload                     | Deskripsi                   |
@@ -44,5 +78,7 @@ Dengan kelebihan tersebut tentunya akan dapat memudahkan proses maintenance dan 
 |--------|------------------|-----------------------------|-----------------------------|
 | GET   | `/cinema/:cinema_id/schedules`    | - | Mendapatkan semua schedule
 | GET   | `/cinema/:cinema_id/schedules/:id`  | - | Mendapatkan schedule berdasarkan ID
-| POST   | `/cinema/:cinema_id/schedules`  | `{"hall_id" : "val","movie_id" : "val","show_time" : "val","price" : "val",}` | Refresh Token
-| PUT   | `/cinema/:cinema_id/schedules/:id`  | `{"hall_id" : "val","movie_id" : "val","show_time" : "val","price" : "val",}` | Refresh Token
+| POST   | `/cinema/:cinema_id/schedules`  | `{"hall_id" : "val","movie_id" : "val","show_time" : "val","price" : "val"}` | Membuat jadwal tayang
+| PUT   | `/cinema/:cinema_id/schedules/:id`  | `{"show_time" : "val","price" : "val"}` | Update jadwal tayang
+| POST   | `/cinema/:cinema_id/schedules/:id/cancel`  | - | Cancel jadwal tayang
+| POST   | `/cinema/:cinema_id/schedules/:id/postpone`  | `{"show_time" : "val"}` | Postpone jadwal tayang
