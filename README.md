@@ -82,3 +82,14 @@ Desain skema relasional dengan PostgreSQL. Mendukung:
 | PUT   | `/cinema/:cinema_id/schedules/:id`  | `{"show_time" : "val","price" : "val"}` | Update jadwal tayang
 | POST   | `/cinema/:cinema_id/schedules/:id/cancel`  | - | Cancel jadwal tayang
 | POST   | `/cinema/:cinema_id/schedules/:id/postpone`  | `{"show_time" : "val"}` | Postpone jadwal tayang
+
+## 📚 Dokumentasi Teknis
+
+| Komponen                          | Link                                     |
+|----------------------------------|------------------------------------------|
+| 🧠 ERD (Entity Relationship Diagram) | [erd](documents/erd)   |
+| 🗄️ DDL (SQL Schema PostgreSQL)       | [ddl](documents/ddl)    |
+| 📮 Postman Collection               | [postman](documents/postman-export)|
+| 🖼️ System Design (Topology)         | [system design](documents/system-design)|
+| 📝 Contoh .env (konfigurasi)        | [env.example](./env.example) |
+
