@@ -24,7 +24,10 @@ Dengan penerapan yang telah dilakukan, dapat dilihat bahwa:
 Dengan kelebihan tersebut tentunya akan dapat memudahkan proses maintenance dan reduce technical debt secara jangka panjang.
 ---
 ## System Design
+### Architectural
 ![System Design](documents/system-design/SystemDesign.png)
+### Booking Flow
+![Book Flow](documents/system-design/Bookings.png)
 ---
 ## Database ERD
 ![Database ERD](documents/erd/erd.png)
