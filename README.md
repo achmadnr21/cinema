@@ -22,6 +22,7 @@ Dengan penerapan yang telah dilakukan, dapat dilihat bahwa:
 - Middleware terstruktur memungkinkan penerapan fitur seperti autentikasi JWT secara konsisten dan mudah dikembangkan lebih lanjut (misalnya logging, rate-limiting).
 - Custom error handling memberikan kontrol lebih atas response error API agar lebih informatif dan sesuai dengan standar HTTP status code.
 Dengan kelebihan tersebut tentunya akan dapat memudahkan proses maintenance dan reduce technical debt secara jangka panjang.
+
 ---
 
 ## 🧩 Soal A. System Design
@@ -96,9 +97,12 @@ Desain skema relasional dengan PostgreSQL. Mendukung:
 - Tipe ENUM untuk status
 - Multi Tenant
 - Adaptive Multi Role Tenant & Resource Based
+
 **Tenant** disini berupa **Cinema**
+
 ---
 ![Database ERD](documents/erd/erd.png)
+
 ---
 
 ## Soal C. Skill Test
