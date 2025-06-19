@@ -6,10 +6,13 @@ create table bookings(
 	foreign key(user_id) references users(id),
 	foreign key(schedule_id) references schedules(id)
 );
+
+
 CREATE TYPE seat_status AS ENUM (
-  'LOCKED',
-  'BOOKED'
+  'LOCKED', 'BOOKED', 'EXPIRED'
 );
+
+
 create table booking_seats(
 	seat_id integer not null,
 	booking_id uuid not null,
@@ -27,7 +30,7 @@ CREATE TYPE payment_status AS ENUM (
 
 create table payments(
 	id uuid unique primary key,
-	booking_id uuid not null,
+	booking_id uuid unique not null,
 	amount numeric(12,2) not null,
 	status payment_status default 'PENDING',
 	paid_at timestamp null,

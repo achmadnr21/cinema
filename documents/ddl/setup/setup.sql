@@ -3,35 +3,38 @@ insert into cinemas(id, name, address) values
 ('35f54cab-9012-466e-bbf9-d739712b873f', 'Gubeng CINEMA', 'Jl. Gubeng Kertajaya');
 
 insert into role_engine.permissions(id, module, action) values
-(1, 'user', 'read'),
-(2, 'role', 'create'),
-(3, 'role', 'read'),
-(4, 'role', 'update'),
-(5, 'role', 'delete'),
-(6, 'cinema', 'create'),
-(7, 'cinema', 'read'),
-(8, 'cinema', 'update'),
-(9, 'cinema', 'delete'),
-(10, 'employee', 'create'),
-(11, 'employee', 'read'),
-(12, 'employee', 'update'),
-(13, 'employee', 'delete'),
-(14, 'movie', 'create'),
-(15, 'movie', 'read'),
-(16, 'movie', 'update'),
-(17, 'movie', 'delete'),
-(18, 'hall', 'create'),
-(19, 'hall', 'read'),
-(20, 'hall', 'update'),
-(21, 'hall', 'delete'),
-(22, 'seat', 'create'),
-(23, 'seat', 'read'),
-(24, 'seat', 'update'),
-(25, 'seat', 'delete'),
-(26, 'schedule', 'create'),
-(27, 'schedule', 'read'),
-(28, 'schedule', 'update'),
-(29, 'schedule', 'delete');
+(1, 'admin', 'admin'),
+(2, 'user', 'read'),
+(3, 'role', 'create'),
+(4, 'role', 'read'),
+(5, 'role', 'update'),
+(6, 'role', 'delete'),
+(7, 'cinema', 'create'),
+(8, 'cinema', 'read'),
+(9, 'cinema', 'update'),
+(10, 'cinema', 'delete'),
+(11, 'employee', 'create'),
+(12, 'employee', 'read'),
+(13, 'employee', 'update'),
+(14, 'employee', 'delete'),
+(15, 'movie', 'create'),
+(16, 'movie', 'read'),
+(17, 'movie', 'update'),
+(18, 'movie', 'delete'),
+(19, 'hall', 'create'),
+(20, 'hall', 'read'),
+(21, 'hall', 'update'),
+(22, 'hall', 'delete'),
+(23, 'seat', 'create'),
+(24, 'seat', 'read'),
+(25, 'seat', 'update'),
+(26, 'seat', 'delete'),
+(27, 'schedule', 'create'),
+(28, 'schedule', 'read'),
+(29, 'schedule', 'update'),
+(30, 'schedule', 'delete');
+
+delete from role_engine.permissions;
 
 insert into role_engine.roles(id, cinema_id, name) values
 (1, 'c412854b-e64d-43c2-aadd-b23e8583dd80', 'SUPERADMIN');
@@ -65,7 +68,8 @@ INSERT INTO role_engine.role_permissions(role_id, permission_id) VALUES
 (1, 26),
 (1, 27),
 (1, 28),
-(1, 29);
+(1, 29),
+(1, 30);
 
 select gen_random_uuid();
 insert into users(id, fullname, email, password) values
@@ -93,3 +97,29 @@ INSERT INTO seats(id, hall_id, row, number) VALUES
 insert into movies(id, title, description, release_date) values
 (1, 'Keluarga Cemara', 'Film keluarga', '2023-12-20');
 
+--select * from cinemas;
+--select * from users;
+--select ed.cinema_id, p.module, p.action
+--from employee_details ed
+--inner join role_engine.roles rer on ed.role_id = rer.id
+--left join role_engine.role_permissions rp on rer.id = rp.role_id 
+--left join role_engine.permissions p on rp.permission_id = p.id
+--where ed.cinema_id = 'c412854b-e64d-43c2-aadd-b23e8583dd80'
+--;
+--select * from role_engine.roles r ;
+--
+--select * from  employee_details ed ;
+--
+--
+---- membuat schedule
+--select * from halls;
+--select * from movies;
+--select * from schedules;
+--
+--SELECT sc.id, sc.hall_id, sc.movie_id, sc.show_time, sc.price, sc.status
+--FROM schedules sc
+--inner join halls h on sc.hall_id = h.id 
+--WHERE h.cinema_id = '35f54cab-9012-466e-bbf9-d739712b873f';
+--
+--
+--delete from schedules ;

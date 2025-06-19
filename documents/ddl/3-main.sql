@@ -29,7 +29,8 @@ create table seats(
 	hall_id integer not null,
 	row char(1) not null,
 	number int not null,
-	foreign key(hall_id) references halls(id)
+	foreign key(hall_id) references halls(id),
+	unique(hall_id, row, number)
 );
 
 create table movies(
@@ -39,6 +40,10 @@ create table movies(
 	description text default 'no desc'
 );
 
+CREATE TYPE schedule_status AS ENUM (
+  'SCHEDULED', 'CANCELLED', 'POSTPONED'
+);
+
 
 create table schedules(
 	id uuid unique primary key,
@@ -46,10 +51,10 @@ create table schedules(
 	movie_id integer not null,
 	show_time timestamp not null,
 	price numeric(12,2) not null,
+	status schedule_status default 'SCHEDULED',
 	foreign key(hall_id) references halls(id),
 	foreign key(movie_id) references movies(id)
 );
-
 
 
 
