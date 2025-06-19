@@ -31,3 +31,18 @@ Dengan kelebihan tersebut tentunya akan dapat memudahkan proses maintenance dan 
 ---
 ## Database ERD
 ![Database ERD](documents/erd/erd.png)
+
+## Auth Endpoint
+| Method | Endpoint         | Payload                     | Deskripsi                   |
+|--------|------------------|-----------------------------|-----------------------------|
+| POST   | `/auth/login`    | `{"email":"val", "password":"val"}`|Login dan mendapatkan token
+| POST   | `/auth/refresh`  | http cookie only | Refresh Token
+| POST   | `/auth/register`  | `{"fullname": "val", "email":"val", "password":"val"}` | Refresh Token
+
+## Schedules Endpoint (Employee)
+| Method | Endpoint         | Payload                     | Deskripsi                   |
+|--------|------------------|-----------------------------|-----------------------------|
+| GET   | `/cinema/:cinema_id/schedules`    | - | Mendapatkan semua schedule
+| GET   | `/cinema/:cinema_id/schedules/:id`  | - | Mendapatkan schedule berdasarkan ID
+| POST   | `/cinema/:cinema_id/schedules`  | `{"hall_id" : "val","movie_id" : "val","show_time" : "val","price" : "val",}` | Refresh Token
+| PUT   | `/cinema/:cinema_id/schedules/:id`  | `{"hall_id" : "val","movie_id" : "val","show_time" : "val","price" : "val",}` | Refresh Token

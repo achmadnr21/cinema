@@ -20,7 +20,7 @@ func NewScheduleUsecase(scheduleRepo contract.ScheduleInterface) *ScheduleUsecas
 }
 
 func (uc *ScheduleUsecase) GetSchedules(cinemaID uuid.UUID) ([]dto.Schedule, error) {
-	schedules, err := uc.ScheduleRepo.FindAll()
+	schedules, err := uc.ScheduleRepo.FindByCinemaID(cinemaID)
 	if err != nil {
 		return nil, err
 	}

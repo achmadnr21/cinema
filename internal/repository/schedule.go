@@ -24,6 +24,7 @@ type ScheduleInterface interface {
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/achmadnr21/cinema/internal/domain/dto"
@@ -115,8 +116,11 @@ func (r *ScheduleRepository) FindByMovieId(movieId int) ([]dto.Schedule, error) 
 
 	return schedules, nil
 }
-func (r *ScheduleRepository) FindByCinemaID(cinemaId string) ([]dto.Schedule, error) {
-	query := "SELECT id, hall_id, movie_id, show_time, price, status FROM schedules WHERE cinema_id = $1"
+func (r *ScheduleRepository) FindByCinemaID(cinemaId uuid.UUID) ([]dto.Schedule, error) {
+	query := `SELECT sc.id, sc.hall_id, sc.movie_id, sc.show_time, sc.price, sc.status
+		FROM schedules sc
+		inner join halls h on sc.hall_id = h.id 
+		WHERE h.cinema_id = $1`
 	rows, err := r.db.Query(query, cinemaId)
 	if err != nil {
 		return nil, err
@@ -168,13 +172,11 @@ func (r *ScheduleRepository) Update(schedule *dto.Schedule) (*dto.Schedule, erro
 	// buat dinamis
 	sets := []string{}
 	if !schedule.ShowTime.IsZero() {
-		sets = append(sets, "show_time = $1")
+		timeStr := schedule.ShowTime.Format("2006-01-02 15:04:05")
+		sets = append(sets, fmt.Sprintf("show_time = '%s'", timeStr))
 	}
 	if schedule.Price != 0 {
-		sets = append(sets, "price = $2")
-	}
-	if schedule.Status != "" {
-		sets = append(sets, "status = $3")
+		sets = append(sets, fmt.Sprintf("price = %f", schedule.Price))
 	}
 	if len(sets) == 0 {
 		return nil, sql.ErrNoRows // No fields to update
@@ -189,9 +191,9 @@ func (r *ScheduleRepository) Update(schedule *dto.Schedule) (*dto.Schedule, erro
 	}
 	// Prepare the query
 	// Note: The status field is not included in the update query, assuming it is not being updated.
-	query := "UPDATE schedules SET " + setsStr + " WHERE id = $4"
+	query := "UPDATE schedules SET " + setsStr + " WHERE id = $1"
 
-	_, err := r.db.Exec(query, schedule.ShowTime, schedule.Price, schedule.Status, schedule.ID)
+	_, err := r.db.Exec(query, schedule.ID)
 	if err != nil {
 		return nil, err
 	}

@@ -24,7 +24,7 @@ type ScheduleInterface interface {
 
 	// === Read (Multiple) ===
 	FindAll() ([]dto.Schedule, error)
-	FindByCinemaID(cinemaId string) ([]dto.Schedule, error)
+	FindByCinemaID(cinemaId uuid.UUID) ([]dto.Schedule, error)
 	FindByMovieId(movieId int) ([]dto.Schedule, error)
 	FindByShowTime(start, end time.Time) ([]dto.Schedule, error)
 

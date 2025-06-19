@@ -28,7 +28,6 @@ func NewScheduleHandler(apiV *gin.RouterGroup, uc *usecase.ScheduleUsecase) {
 			scheduleHandler.GetSchedules)
 
 		schedule.GET("/:id",
-			middleware.RequirePermissionCinema("schedule", "read"),
 			scheduleHandler.GetScheduleByID)
 
 		schedule.POST("/",
@@ -39,9 +38,9 @@ func NewScheduleHandler(apiV *gin.RouterGroup, uc *usecase.ScheduleUsecase) {
 			middleware.RequirePermissionCinema("schedule", "update"),
 			scheduleHandler.UpdateSchedule)
 
-		schedule.DELETE("/:id",
-			middleware.RequirePermissionCinema("schedule", "delete"),
-			scheduleHandler.DeleteSchedule)
+		// schedule.DELETE("/:id",
+		// 	middleware.RequirePermissionCinema("schedule", "delete"),
+		// 	scheduleHandler.DeleteSchedule)
 
 		schedule.POST("/:id/cancel",
 			middleware.RequirePermissionCinema("schedule", "update"),
@@ -125,19 +124,19 @@ func (h *ScheduleHandler) UpdateSchedule(c *gin.Context) {
 	c.JSON(200, utils.ResponseSuccess("Schedule updated successfully", schedule))
 }
 
-func (h *ScheduleHandler) DeleteSchedule(c *gin.Context) {
-	scheduleID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		c.JSON(utils.GetHTTPErrorCode(err), utils.ResponseError(err.Error()))
-		return
-	}
-	err = h.uc.DeleteSchedule(scheduleID)
-	if err != nil {
-		c.JSON(utils.GetHTTPErrorCode(err), utils.ResponseError(err.Error()))
-		return
-	}
-	c.JSON(200, utils.ResponseSuccess("Schedule deleted successfully", nil))
-}
+// func (h *ScheduleHandler) DeleteSchedule(c *gin.Context) {
+// 	scheduleID, err := uuid.Parse(c.Param("id"))
+// 	if err != nil {
+// 		c.JSON(utils.GetHTTPErrorCode(err), utils.ResponseError(err.Error()))
+// 		return
+// 	}
+// 	err = h.uc.DeleteSchedule(scheduleID)
+// 	if err != nil {
+// 		c.JSON(utils.GetHTTPErrorCode(err), utils.ResponseError(err.Error()))
+// 		return
+// 	}
+// 	c.JSON(200, utils.ResponseSuccess("Schedule deleted successfully", nil))
+// }
 
 func (h *ScheduleHandler) CancelSchedule(c *gin.Context) {
 	scheduleID, err := uuid.Parse(c.Param("id"))

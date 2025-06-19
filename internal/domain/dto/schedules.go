@@ -22,10 +22,10 @@ import (
 )
 
 type Schedule struct {
-	ID       uuid.UUID `json:"id"`
-	HallID   int       `json:"hall_id"`
-	MovieID  int       `json:"movie_id"`
-	ShowTime time.Time `json:"show_time"`
-	Price    float64   `json:"price"`
-	Status   string    `json:"status"`
+	ID       uuid.UUID `json:"id,omitempty"`
+	HallID   int       `json:"hall_id,omitempty"`
+	MovieID  int       `json:"movie_id,omitempty"`
+	ShowTime time.Time `json:"show_time,omitempty"`
+	Price    float64   `json:"price,omitempty"`
+	Status   string    `json:"status,omitempty"`
 }
