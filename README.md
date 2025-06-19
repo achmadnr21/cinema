@@ -23,20 +23,55 @@ Dengan penerapan yang telah dilakukan, dapat dilihat bahwa:
 - Custom error handling memberikan kontrol lebih atas response error API agar lebih informatif dan sesuai dengan standar HTTP status code.
 Dengan kelebihan tersebut tentunya akan dapat memudahkan proses maintenance dan reduce technical debt secara jangka panjang.
 ---
-## System Design
 
-### 🔧 Fitur Utama:
-- Pemesanan tiket online dengan pemilihan kursi
-- Manajemen film dan jadwal tayang
-- Proses pembayaran dan refund otomatis
-- Monitoring performa sistem
-- Penyimpanan data analitik untuk insight dan rekomendasi
-
----
+## 🧩 Soal A. System Design
 
 ### Topologi
 ![System Design](documents/system-design/SystemDesign.png)
 ---
+### Booking Flow
+![Book Flow](documents/system-design/Bookings.png)
+---
+### Penjelasan
+
+Platform ini dirancang untuk mendukung pembelian tiket bioskop secara online dengan **jaminan eksklusivitas kursi**, skalabilitas untuk bioskop nasional, dan fleksibilitas saat terjadi perubahan jadwal atau pembatalan.
+
+---
+
+### 🎫 1. Pemilihan Tempat Duduk (Seat Selection System)
+
+Untuk menghindari konflik pemesanan antar pengguna secara paralel, sistem pemilihan tempat duduk dibangun dengan pendekatan sebagai berikut:
+
+- Saat user memilih kursi, sistem akan **melock kursi tersebut secara temporer** dengan status `LOCKED` dalam tabel `booking_seats`, dan disimpan sementara di Redis (untuk fast-access).
+- Kursi yang berstatus `LOCKED` akan otomatis diubah menjadi `EXPIRED` jika **tidak dibayar dalam waktu tertentu** (misalnya 5 menit), melalui mekanisme background job (cron/kafka event).
+- Saat pembayaran berhasil, status akan berubah menjadi `BOOKED`, dan tidak bisa digunakan oleh pengguna lain.
+- Penggunaan Redis membuat sistem cepat dan bisa menangani ribuan user secara paralel tanpa blocking ke DB utama.
+
+---
+
+### 🔁 2. Restok Tiket (Releasing Booked/Locked Seats)
+
+Tiket (kursi) yang pernah dipesan bisa direstock dalam beberapa kondisi:
+
+- **Kursi tidak dibayar** → otomatis masuk ke status `EXPIRED` dan dapat dipilih ulang oleh user lain.
+- **Refund berhasil** → sistem akan melakukan rollback pada `booking_seats` dan menghapus relasi booking-nya. Kursi akan tersedia kembali.
+- Redis di-repopulate kembali oleh consumer (event listener) untuk mencerminkan kursi yang kembali tersedia.
+
+---
+
+### 💸 3. Refund / Pembatalan Jadwal
+
+Jika pihak bioskop membatalkan atau menunda film, alur refund dilakukan sebagai berikut:
+
+- `schedules.status` akan diubah menjadi `CANCELLED` atau `POSTPONED`
+- Semua booking terkait akan diproses oleh **background worker**:
+  - Jika `CANCELLED`, maka entri `payments` akan diupdate jadi `REFUNDED`
+  - Dana akan dikembalikan via payment gateway
+  - User akan mendapat notifikasi (via Notification Service)
+  - Kursi dihapus dari booking dan kembali tersedia
+
+---
+
 
 ## 🗂️ Teknologi yang Digunakan
 
@@ -51,7 +86,7 @@ Dengan kelebihan tersebut tentunya akan dapat memudahkan proses maintenance dan 
 | API Testing | Postman |
 
 ---
-## 💽 Database Design
+## 💽 Soal B. Database Design
 
 Desain skema relasional dengan PostgreSQL. Mendukung:
 
@@ -59,12 +94,18 @@ Desain skema relasional dengan PostgreSQL. Mendukung:
 - Lock kursi sementara
 - Status transaksi dan refund
 - Tipe ENUM untuk status
+- Multi Tenant
+- Adaptive Multi Role Tenant & Resource Based
+**Tenant** disini berupa **Cinema**
 ---
 ![Database ERD](documents/erd/erd.png)
 ---
-### Booking Flow
-![Book Flow](documents/system-design/Bookings.png)
----
+
+## Soal C. Skill Test
+Buat API sederhana menggunakan Golang dengan database point test B. API tersebut adalah :
+1. Buat API Login User
+2. Buat API CRUD data jadwal tayang
+Note: API tersebut sudah menggunakan Authorization pada point 1
 
 ## Auth Endpoint
 | Method | Endpoint         | Payload                     | Deskripsi                   |
@@ -84,7 +125,6 @@ Desain skema relasional dengan PostgreSQL. Mendukung:
 | POST   | `/cinema/:cinema_id/schedules/:id/postpone`  | `{"show_time" : "val"}` | Postpone jadwal tayang
 
 ## 📚 Dokumentasi Teknis
-
 | Komponen                          | Link                                     |
 |----------------------------------|------------------------------------------|
 | 🧠 ERD (Entity Relationship Diagram) | [erd](documents/erd)   |
